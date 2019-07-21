@@ -49,9 +49,21 @@ end
 ```
 
 ``` ruby
+# App Engine HTTP Request (Default)
+Activejob::GoogleCloudTasks::Config.target = :app_engine
+
 class SampleController < ApplicationController
   def job
-    SampleJob.perform_later({name: 'ken'})
+    SampleJob.perform_later(name: 'ken')
+  end
+end
+
+# HTTP Request
+Activejob::GoogleCloudTasks::Config.target = :http
+
+class SampleController < ApplicationController
+  def job
+    SampleJob.perform_later({ name: 'ken' }.to_json, url: 'https://example.com', http_method: :GET, headers: { 'Content-Type' => 'application/json'})
   end
 end
 ```
@@ -76,7 +88,7 @@ Rails.application.config.active_job.queue_adapter = Activejob::GoogleCloudTasks:
 #### Argument Reference
 - `project` - (Required) The ID of the Google Cloud project in which the Cloud Tasks belongs.
 
-- `location` - (Required) The Location of the Cloud Tasks.
+- `location` - (Required) The Location of the Cloud Tasks. (e.g. `asia-northeast1`)
 
 - `cloud_tasks_client` - (Optional) The instance of `Google::Cloud::Tasks`. Please see [`Google::Cloud::Tasks.new`](https://googleapis.github.io/google-cloud-ruby/docs/google-cloud-tasks/latest/Google/Cloud/Tasks.html#new-class_method) for details. Default: `Google::Cloud::Tasks.new(version: :v2beta3)`
 
@@ -85,7 +97,8 @@ Rails.application.config.active_job.queue_adapter = Activejob::GoogleCloudTasks:
 Activejob::GoogleCloudTasks::Config.path = '/foo'
 ```
 
-- `path` - (Optional) The path which the Cloud Tasks service forwards the task request to the worker. Default: `/activejobs`
+- `target` - (Optional) The target to which the Cloud Tasks service forwards the task. Currently, Cloud Tasks supports App Engine target `:app_engine` and HTTP target (beta) `:http`. Default: `:app_engine`
+- `path` - (Optional, when `target` is `:app_engine`) The path of App Engine target to handle the task request from the Cloud Tasks service. Default: `/activejobs`
 
 ## Development
 
